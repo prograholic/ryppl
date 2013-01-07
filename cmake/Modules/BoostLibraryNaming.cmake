@@ -67,5 +67,6 @@ function(boost_library_naming)
   set_target_properties(${ARGN} PROPERTIES
     DEBUG_POSTFIX   "${tag_toolset}${tag_mt}-${tag_rtdebug}d${tag_version}"
     RELEASE_POSTFIX "${tag_toolset}${tag_mt}${tag_version}"
+    PREFIX          "lib"
     )
 endfunction()
