@@ -28,7 +28,7 @@ include(detail/test_implementation)
 
 if(NOT TARGET test)
   add_custom_target(test)
-endif()  
+endif()
 
 function(ryppl_test_suite)
   if(RYPPL_DISABLE_TESTS)

@@ -13,7 +13,7 @@
 #     )
 #
 # This function builds a custom command that transforms an XML file
-# (input) via the given XSL stylesheet. 
+# (input) via the given XSL stylesheet.
 #
 # The PARAMETERS argument is followed by param=value pairs that set
 # additional parameters to the XSL stylesheet. The parameter names
@@ -56,7 +56,7 @@ else()
       )
   endif()
   include(FindPackageHandleStandardArgs)
-  find_package_handle_standard_args(XSLTPROC 
+  find_package_handle_standard_args(XSLTPROC
     REQUIRED_VARS XSLTPROC_EXECUTABLE
     VERSION_VAR XSLTPROC_VERSION
     )
@@ -73,7 +73,7 @@ function(xsltproc)
   cmake_parse_arguments(XSL
     "NONET;XINCLUDE"
     "CATALOG;STYLESHEET;OUTPUT"
-    "DEPENDS;INPUT;PARAMETERS"
+    "DEPENDS;INPUT;PARAMETERS;PATH"
     ${ARGN}
     )
 
@@ -99,8 +99,24 @@ function(xsltproc)
     file(APPEND ${script} "  --stringparam ${name} ${value}\n")
   endforeach()
 
+  # add paths for searching resources
+  foreach(pathEntry ${XSL_PATH})
+    file(APPEND ${script} " --path \"${pathEntry}\"")
+  endforeach()
+
+  # add input file list
   file(APPEND ${script}
-    "  -o \"${XSL_OUTPUT}\" \"${XSL_STYLESHEET}\" \"${XSL_INPUT}\"\n"
+    "  -o \"${XSL_OUTPUT}\" \"${XSL_STYLESHEET}\""
+    )
+
+  foreach(inputFile ${XSL_INPUT})
+    file(APPEND ${script}
+      " \"${inputFile}\""
+      )
+  endforeach()
+
+  file(APPEND ${script}
+    "\n"
     "  RESULT_VARIABLE result\n"
     "  )\n"
     "if(NOT result EQUAL 0)\n"
