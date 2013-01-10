@@ -9,7 +9,7 @@ ryppl_find_and_use_package(Quickbook)
 
 
 # convert qbk to xml via quickbook
-function(ryppl_quickbook qbkFile xmlFile)
+function(quickbook_to_boostbook qbkFile xmlFile)
 
   cmake_parse_arguments(ryppl_qbk
     "" # no options
@@ -37,5 +37,6 @@ function(ryppl_quickbook qbkFile xmlFile)
   add_custom_command(
     COMMAND quickbook --input-file ${qbkFile} --output-file ${xmlFile} ${RYPPL_QBK_INCLUDES_ARG} ${RYPPL_QBK_DEFINES_ARG} ${RYPPL_QBK_INDENT_ARG} ${RYPPL_QBK_LINEWIDTH_ARG}
     OUTPUT ${xmlFile}
+    COMMENT "converting quickbook file (${qbkFile}) to boostbook xml ..."
     )
-endfunction(ryppl_quickbook)
+endfunction(quickbook_to_boostbook)

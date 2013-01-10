@@ -59,7 +59,7 @@ function(ryppl_documentation input)
       INPUT      ${input}
       OUTPUT     ${hhp_output}
       CATALOG    ${BOOSTBOOK_CATALOG}
-      STYLESHEET ${Ryppl_RESOURCE_PATH}/docbook-xsl/htmlhelp.xsl
+      STYLESHEET ${BOOSTBOOK_XSL_DIR}/htmlhelp.xsl
       PARAMETERS "htmlhelp.chm=../${PROJECT_NAME}.chm"
       )
     set(hhc_cmake ${CMAKE_CURRENT_BINARY_DIR}/hhc.cmake)
@@ -83,7 +83,7 @@ function(ryppl_documentation input)
       INPUT      ${input}
       OUTPUT     ${output_html}
       CATALOG    ${BOOSTBOOK_CATALOG}
-      STYLESHEET ${Ryppl_RESOURCE_PATH}/docbook-xsl/xhtml.xsl
+      STYLESHEET ${BOOSTBOOK_XSL_DIR}/xhtml.xsl
       )
     list(APPEND doc_targets ${output_html})
 #   set(output_man  ${CMAKE_CURRENT_BINARY_DIR}/man/man.manifest)
@@ -138,4 +138,116 @@ function(ryppl_documentation input)
       PROJECT_LABEL "${PROJECT_NAME} (pdf)"
       )
   endif()
+endfunction()
+
+
+
+
+
+function(add_to_doc input)
+  get_filename_component(ext ${input} EXT)
+  #get_filename_component(name ${input} NAME_WE)
+  #get_filename_component(input ${input} ABSOLUTE)
+
+  set(target_name "${PROJECT_NAME}-${ext}")
+  add_custom_target(${target_name} DEPENDS ${input})
+
+  if(NOT TARGET documentation)
+    add_custom_target(documentation)
+  endif()
+  
+  add_dependencies(documentation ${target_name})
+
+endfunction()
+
+
+
+
+
+
+
+function(xslt_boostbook_to_docbook)
+  cmake_parse_arguments(XSL
+    ""
+    "OUTPUT"
+    "DEPENDS;INPUT;PARAMETERS;PATH"
+    ${ARGN}
+  )
+
+  xsltproc(
+    INPUT
+      ${XSL_INPUT}
+    OUTPUT
+      ${XSL_OUTPUT}
+    CATALOG
+      ${BOOSTBOOK_CATALOG}
+    STYLESHEET
+      ${BOOSTBOOK_XSL_DIR}/docbook.xsl
+    DEPENDS
+      ${XSL_DEPENDS}
+    PATH
+      ${XSL_PATH}
+    PARAMETERS
+      ${XSL_PARAMETERS}
+  )
+endfunction()
+
+
+
+function(xslt_docbook_to_html)
+  cmake_parse_arguments(XSL
+    ""
+    "OUTPUT;MANIFEST"
+    "DEPENDS;INPUT;PARAMETERS;PATH"
+    ${ARGN}
+  )
+
+  if(NOT XSL_MANIFEST)
+    message(FATAL_ERROR "xslt_docbook_to_html command requires MANIFEST parameter!")
+  endif()
+
+  xsltproc(
+    INPUT
+      ${XSL_INPUT}
+    OUTPUT
+      ${XSL_MANIFEST}
+    CATALOG
+      ${BOOSTBOOK_CATALOG}
+    STYLESHEET
+      ${BOOSTBOOK_XSL_DIR}/html.xsl
+    DEPENDS
+      ${XSL_DEPENDS}
+    PATH
+      ${XSL_PATH}
+    PARAMETERS
+      ${XSL_PARAMETERS}
+      manifest="${XSL_MANIFEST}"
+  )
+endfunction()
+
+
+function(xslt_doxy_to_boostbook)
+  cmake_parse_arguments(XSL
+    ""
+    "OUTPUT"
+    "DEPENDS;INPUT;PARAMETERS;PATH"
+    ${ARGN}
+  )
+  
+  xsltproc(
+    INPUT
+      ${XSL_INPUT}
+    OUTPUT
+      ${XSL_OUTPUT}
+    CATALOG
+      ${BOOSTBOOK_CATALOG}
+    STYLESHEET
+      ${BOOSTBOOK_XSL_DIR}/doxygen/doxygen2boostbook.xsl
+    DEPENDS
+      ${XSL_DEPENDS}
+    PATH
+      ${XSL_PATH}
+    PARAMETERS
+      ${XSL_PARAMETERS}
+  )
 endfunction()

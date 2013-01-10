@@ -128,5 +128,6 @@ function(xsltproc)
   add_custom_command(OUTPUT ${XSL_OUTPUT}
     COMMAND ${CMAKE_COMMAND} -DXSLTPROC=${XSLTPROC_EXECUTABLE} -P ${script}
     DEPENDS ${XSL_STYLESHEET} ${XSL_INPUT} ${XSL_DEPENDS}
+    COMMENT "performing xslt transformation for file ${XSL_INPUT} ..."
     )
 endfunction()
