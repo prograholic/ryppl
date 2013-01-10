@@ -143,7 +143,9 @@ endfunction()
 
 
 
-
+# This function adds file as dependency to `documentation` target
+# For example you may pass `manifest` file 
+# (which generated in function xslt_docbook_to_html) as input parameter
 function(add_to_doc input)
   get_filename_component(ext ${input} EXT)
   #get_filename_component(name ${input} NAME_WE)
@@ -162,10 +164,31 @@ endfunction()
 
 
 
-
-
-
-
+# This function performs transformation boostbook xml
+# to docbook xml using docbook.xsl
+#
+# input parameters:
+#  INPUT <input_file> - original file (boostbook XML)
+#  OUTPUT <output_file> - resulting file (docbook XML)
+#  DEPENDS <file_list> - list of files, which must trigger this conversion
+#   can be empty. Usually this parameters is used when input xml contains
+#   include directive with generated files.
+#  PATH <path_list> - list of paths where search files for inclusion
+#  PARAMETERS <param_list> - list of parameters which passed directly to xsltproc
+#
+# Example:
+# xslt_boostbook_to_docbook(
+#   INPUT
+#     ${CMAKE_CURRENT_BINARY_DIR}/algorithm.xml
+#   OUTPUT
+#     ${dbk_file}
+#   DEPENDS
+#     ${CMAKE_CURRENT_BINARY_DIR}/autodoc.xml
+#   PATH
+#     ${CMAKE_CURRENT_SOURCE_DIR}
+#     ${CMAKE_CURRENT_BINARY_DIR}
+# )
+#
 function(xslt_boostbook_to_docbook)
   cmake_parse_arguments(XSL
     ""
@@ -193,7 +216,12 @@ function(xslt_boostbook_to_docbook)
 endfunction()
 
 
-
+# Function performs conversion from docbook xml to html
+#
+# See `xslt_boostbook_to_docbook` description 
+#   for parameters INPUT, OUTPUT, DEPENDS, PARAMETERS, PATH 
+# MANIFEST <manifest_file> - file which contains list of files after generation
+#  this file can be passed as parameter to function `add_to_doc`
 function(xslt_docbook_to_html)
   cmake_parse_arguments(XSL
     ""
@@ -226,6 +254,10 @@ function(xslt_docbook_to_html)
 endfunction()
 
 
+# Function performs conversion from docbook xml to html
+#
+# See `xslt_boostbook_to_docbook` description 
+#   for parameters INPUT, OUTPUT, DEPENDS, PARAMETERS, PATH 
 function(xslt_doxy_to_boostbook)
   cmake_parse_arguments(XSL
     ""
