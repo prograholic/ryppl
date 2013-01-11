@@ -146,12 +146,8 @@ endfunction()
 # This function adds file as dependency to `documentation` target
 # For example you may pass `manifest` file 
 # (which generated in function xslt_docbook_to_html) as input parameter
-function(add_to_doc input)
-  get_filename_component(ext ${input} EXT)
-  #get_filename_component(name ${input} NAME_WE)
-  #get_filename_component(input ${input} ABSOLUTE)
-
-  set(target_name "${PROJECT_NAME}-${ext}")
+function(add_to_doc input type)
+  set(target_name "${PROJECT_NAME}-${type}")
   add_custom_target(${target_name} DEPENDS ${input})
 
   if(NOT TARGET documentation)
