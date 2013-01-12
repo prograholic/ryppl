@@ -12,7 +12,7 @@
 #=============================================================================
 
 if(NOT TARGET documentation)
-  add_custom_target(documentation)
+  add_custom_target(documentation ALL)
 endif()  
 
 if(CMAKE_HOST_WIN32)
@@ -150,10 +150,6 @@ function(add_to_doc input type)
   set(target_name "${PROJECT_NAME}-${type}")
   add_custom_target(${target_name} DEPENDS ${input})
 
-  if(NOT TARGET documentation)
-    add_custom_target(documentation)
-  endif()
-  
   add_dependencies(documentation ${target_name})
 
 endfunction()
@@ -285,7 +281,7 @@ function(export_documentation)
   cmake_parse_arguments(doc_export
     ""
     "BOOSTBOOK;IMG_DIR;CSS_DIR;HTML_DIR"
-    "IMAGES;CSS;HTML"
+    "IMAGES;CSS;HTML;DEPENDS;BOOSTBOOK_PATH"
     ${ARGN}
   )
 
@@ -298,11 +294,8 @@ function(export_documentation)
       ${doc_export_IMAGES}
       ${doc_export_CSS}
       ${doc_export_HTML}
+      ${doc_export_DEPENDS}
   )
-
-  if(NOT TARGET documentation)
-    add_custom_target(documentation)
-  endif()
 
   add_dependencies(documentation ${DOC_TARGET})
 
@@ -312,30 +305,34 @@ function(export_documentation)
 
   file(WRITE ${doc_export_OUTPUT} "# This file is generated with boost build\n# Do not edit !!!\n\n")
 
-#  set(include_guard ${DOC_TARGET}_include_guard)
-
-#  file(APPEND ${doc_export_OUTPUT}
-#    "if (NOT ${include_guard})\n"
-#    "  return()\n"
-#    "endif()\n"
-#    "set(${include_guard} TRUE)\n\n"
-#  )
-
   if(doc_export_BOOSTBOOK)
     get_filename_component(boostbook_full_name ${doc_export_BOOSTBOOK} ABSOLUTE)
     get_filename_component(boostbook_entry_path ${boostbook_full_name} PATH)
-    file(APPEND ${doc_export_OUTPUT} "set(${PROJECT_NAME}_BOOSTBOOK_PATH ${boostbook_entry_path})\n")
-    file(APPEND ${doc_export_OUTPUT} "list(APPEND BOOSTBOOK_GENERATED_PATH \${${PROJECT_NAME}_BOOSTBOOK_PATH})\n")
+    file(APPEND ${doc_export_OUTPUT} "set(${DOC_TARGET}_BOOSTBOOK ${boostbook_entry_path})\n")
+    file(APPEND ${doc_export_OUTPUT} "list(APPEND BOOSTBOOK_GENERATED_PATH \${${DOC_TARGET}_BOOSTBOOK})\n")
   endif()
 
+  foreach(path_entry ${doc_export_BOOSTBOOK_PATH})
+    file(APPEND ${doc_export_OUTPUT} "list(APPEND BOOSTBOOK_GENERATED_PATH ${path_entry})\n")
+  endforeach()
+
+  file(APPEND ${doc_export_OUTPUT} "\n")
+
+  # html processing section
+  file(APPEND ${doc_export_OUTPUT} "set(${DOC_TARGET}_HTML")
+  foreach(html_entry ${doc_export_HTML})
+    file(APPEND ${doc_export_OUTPUT} " ${html_entry}")
+  endforeach()
+  file(APPEND ${doc_export_OUTPUT} ")\n\n")
+
   # image processing section
-  file(APPEND ${doc_export_OUTPUT} "set(${PROJECT_NAME}_IMAGES")
+  file(APPEND ${doc_export_OUTPUT} "set(${DOC_TARGET}_IMAGES")
   foreach(img ${doc_export_IMAGES})
     file(APPEND ${doc_export_OUTPUT} " ${img}")
   endforeach()
   file(APPEND ${doc_export_OUTPUT} ")\n\n")
 
-  file(APPEND ${doc_export_OUTPUT} "set(${PROJECT_NAME}_IMG_DIR ${doc_export_IMG_DIR})\n\n\n")
+  file(APPEND ${doc_export_OUTPUT} "set(${DOC_TARGET}_IMG_DIR ${doc_export_IMG_DIR})\n\n\n")
 
   export(PACKAGE ${DOC_TARGET})
 
