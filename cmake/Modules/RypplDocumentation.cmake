@@ -261,7 +261,7 @@ function(xslt_doxy_to_boostbook)
     "DEPENDS;INPUT;PARAMETERS;PATH"
     ${ARGN}
   )
-  
+
   xsltproc(
     INPUT
       ${XSL_INPUT}
@@ -278,4 +278,65 @@ function(xslt_doxy_to_boostbook)
     PARAMETERS
       ${XSL_PARAMETERS}
   )
+endfunction()
+
+
+function(export_documentation)
+  cmake_parse_arguments(doc_export
+    ""
+    "BOOSTBOOK;IMG_DIR;CSS_DIR;HTML_DIR"
+    "IMAGES;CSS;HTML"
+    ${ARGN}
+  )
+
+  set(DOC_TARGET ${PROJECT_NAME}Doc)
+
+  add_custom_target(
+    ${DOC_TARGET}
+    DEPENDS
+      ${doc_export_BOOSTBOOK}
+      ${doc_export_IMAGES}
+      ${doc_export_CSS}
+      ${doc_export_HTML}
+  )
+
+  if(NOT TARGET documentation)
+    add_custom_target(documentation)
+  endif()
+
+  add_dependencies(documentation ${DOC_TARGET})
+
+  set(doc_export_OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${DOC_TARGET}Config.cmake")
+
+  # TODO add necessary param checking (IMAGES and IMG_DIR and so on)
+
+  file(WRITE ${doc_export_OUTPUT} "# This file is generated with boost build\n# Do not edit !!!\n\n")
+
+#  set(include_guard ${DOC_TARGET}_include_guard)
+
+#  file(APPEND ${doc_export_OUTPUT}
+#    "if (NOT ${include_guard})\n"
+#    "  return()\n"
+#    "endif()\n"
+#    "set(${include_guard} TRUE)\n\n"
+#  )
+
+  if(doc_export_BOOSTBOOK)
+    get_filename_component(boostbook_full_name ${doc_export_BOOSTBOOK} ABSOLUTE)
+    get_filename_component(boostbook_entry_path ${boostbook_full_name} PATH)
+    file(APPEND ${doc_export_OUTPUT} "set(${PROJECT_NAME}_BOOSTBOOK_PATH ${boostbook_entry_path})\n")
+    file(APPEND ${doc_export_OUTPUT} "list(APPEND BOOSTBOOK_GENERATED_PATH \${${PROJECT_NAME}_BOOSTBOOK_PATH})\n")
+  endif()
+
+  # image processing section
+  file(APPEND ${doc_export_OUTPUT} "set(${PROJECT_NAME}_IMAGES")
+  foreach(img ${doc_export_IMAGES})
+    file(APPEND ${doc_export_OUTPUT} " ${img}")
+  endforeach()
+  file(APPEND ${doc_export_OUTPUT} ")\n\n")
+
+  file(APPEND ${doc_export_OUTPUT} "set(${PROJECT_NAME}_IMG_DIR ${doc_export_IMG_DIR})\n\n\n")
+
+  export(PACKAGE ${DOC_TARGET})
+
 endfunction()
