@@ -11,9 +11,6 @@
 #   http://www.boost.org/LICENSE_1_0.txt
 #=============================================================================
 
-if(NOT TARGET documentation)
-  add_custom_target(documentation ALL)
-endif()  
 
 if(CMAKE_HOST_WIN32)
   set(dev_null NUL)
