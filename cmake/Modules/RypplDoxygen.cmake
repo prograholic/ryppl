@@ -21,7 +21,7 @@ include(CMakeParseArguments)
 
 function(ryppl_doxygen name)
   cmake_parse_arguments(DOXY
-    "XML;TAG" "DOXYFILE;OUTPUT" "INPUT;TAGFILES;PARAMETERS" ${ARGN})
+    "XML;TAG;HTML" "DOXYFILE;OUTPUT" "INPUT;TAGFILES;PARAMETERS;XSLT_PARAMETERS" ${ARGN})
 
   set(doxyfile ${CMAKE_CURRENT_BINARY_DIR}/${name}.doxyfile)
 
@@ -58,6 +58,13 @@ function(ryppl_doxygen name)
     file(APPEND ${doxyfile} "GENERATE_TAGFILE = ${DOXY_OUTPUT}\n")
   endif()
 
+  if (DOXY_HTML)
+    get_filename_component(html_dir ${DOXY_OUTPUT} PATH)
+    list(APPEND output ${DOXY_OUTPUT})
+    file(APPEND ${doxyfile} "GENERATE_HTML = YES\n")
+    file(APPEND ${doxyfile} "HTML_OUTPUT = ${html_dir}\n")
+  endif()
+
   set(tagfiles)
   foreach(file ${DOXY_TAGFILES})
     get_filename_component(file ${file} ABSOLUTE)
@@ -84,6 +91,7 @@ function(ryppl_doxygen name)
       INPUT      "${xml_dir}/index.xml"
       OUTPUT     "${DOXY_OUTPUT}"
       STYLESHEET "${xml_dir}/combine.xslt"
+      PARAMETERS ${DOXY_XSLT_PARAMETERS}
     )
   endif()
 endfunction()
