@@ -24,6 +24,8 @@ find_package(FOProcessor QUIET)
 find_package(HTMLHelp QUIET)
 find_package(XSLTPROC REQUIRED)
 
+include(RypplDoxygen)
+
 get_filename_component(Ryppl_RESOURCE_PATH
   "${CMAKE_CURRENT_LIST_DIR}/../Resources" ABSOLUTE CACHE
   )
@@ -274,11 +276,65 @@ function(xslt_doxy_to_boostbook)
 endfunction()
 
 
+# Function performs generation doxygen XML and after that converts it do boostbook XML
+#
+# This function acts as simple composition of two commands
+#  ryppl_doxygen and xslt_doxy_to_boostbook
+# Parameters:
+#  INPUT <input_file_list_or_path> - list of files and/or directories
+#   which contain source code with doxygen comments
+#  OUTPUT <file> - filename for generated boostbook XML
+#  DOXYFILE <file> - file with doxygen parameters (optional)
+#  DOXYGEN_PARAMETERS <param_list> - list of doxygen parameters
+#   which pass directly to doxygen (params seta as <key>=<value>)
+#  XSLT_PATH <list> - passed directly to xsltproc,
+#   see also documentation for `xslt_boostbook_to_docbook`
+#  XSLT_PARAMETERS <param_list> - passed directly to xsltproc
+#   see also documentation for `xslt_boostbook_to_docbook`
+#
+# Usage example
+function (ryppl_gen_doxy_to_boostbook)
+  cmake_parse_arguments(DOXY_BBK
+    ""
+    "OUTPUT;DOXYFILE"
+    "DEPENDS;INPUT;DOXYGEN_PARAMETERS;XSLT_PATH;XSLT_PARAMETERS"
+    ${ARGN}
+  )
+
+  get_filename_component(doxy_name ${DOXY_BBK_OUTPUT} NAME_WE)
+
+  set(doxy_output ${DOXY_BBK_OUTPUT}.doxyxml)
+  ryppl_doxygen(
+    ${PROJECT_NAME}_${doxy_name}_doxy
+    XML
+    INPUT
+      ${DOXY_BBK_INPUT}
+    OUTPUT
+      ${doxy_output}
+    DOXYFILE
+      ${DOXY_BBK_DOXYFILE}
+    PARAMETERS
+      ${DOXY_BBK_DOXYGEN_PARAMETERS}
+  )
+
+  xslt_doxy_to_boostbook(
+    INPUT
+      ${doxy_output}
+    OUTPUT
+      ${DOXY_BBK_OUTPUT}
+    PATH
+      ${DOXY_BBK_XSLT_PATH}
+    PARAMETERS
+      ${DOXY_BBK_XSLT_PARAMETERS}
+  )
+endfunction()
+
+
 function(export_documentation)
   cmake_parse_arguments(doc_export
     ""
-    "BOOSTBOOK;IMG_DIR;CSS_DIR;HTML_DIR"
-    "IMAGES;CSS;HTML;DEPENDS;BOOSTBOOK_PATH"
+    "BOOSTBOOK"
+    "BOOSTBOOK_PATH;DEPENDS"
     ${ARGN}
   )
 
@@ -288,9 +344,6 @@ function(export_documentation)
     ${DOC_TARGET}
     DEPENDS
       ${doc_export_BOOSTBOOK}
-      ${doc_export_IMAGES}
-      ${doc_export_CSS}
-      ${doc_export_HTML}
       ${doc_export_DEPENDS}
   )
 
@@ -298,16 +351,19 @@ function(export_documentation)
 
   set(doc_export_OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${DOC_TARGET}Config.cmake")
 
-  # TODO add necessary param checking (IMAGES and IMG_DIR and so on)
-
   file(WRITE ${doc_export_OUTPUT} "# This file is generated with boost build\n# Do not edit !!!\n\n")
 
   if(doc_export_BOOSTBOOK)
     get_filename_component(boostbook_full_name ${doc_export_BOOSTBOOK} ABSOLUTE)
     get_filename_component(boostbook_entry_path ${boostbook_full_name} PATH)
-    file(APPEND ${doc_export_OUTPUT} "set(${DOC_TARGET}_BOOSTBOOK ${boostbook_entry_path})\n")
-    file(APPEND ${doc_export_OUTPUT} "list(APPEND BOOSTBOOK_GENERATED_PATH \${${DOC_TARGET}_BOOSTBOOK})\n")
+    file(APPEND ${doc_export_OUTPUT} "set(${DOC_TARGET}_BOOSTBOOK ${boostbook_full_name})\n")
+    file(APPEND ${doc_export_OUTPUT} "set(${DOC_TARGET}_BOOSTBOOK_PATH ${boostbook_entry_path})\n\n")
+
+    file(APPEND ${doc_export_OUTPUT} "list(APPEND BOOSTBOOK_GENERATED_PATH \${${DOC_TARGET}_BOOSTBOOK_PATH})\n")
+    file(APPEND ${doc_export_OUTPUT} "list(APPEND DOCUMENTATION_DEPENDENCIES ${doc_export_BOOSTBOOK})\n")
   endif()
+
+  file(APPEND ${doc_export_OUTPUT} "list(APPEND DOCUMENTATION_DEPENDENCIES ${doc_export_DEPENDS})")
 
   foreach(path_entry ${doc_export_BOOSTBOOK_PATH})
     file(APPEND ${doc_export_OUTPUT} "list(APPEND BOOSTBOOK_GENERATED_PATH ${path_entry})\n")
