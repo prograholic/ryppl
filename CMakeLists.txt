@@ -34,6 +34,3 @@ export_documentation(
   BOOSTBOOK
     ${cmake_docbook}
 )
-
-#ryppl_documentation(${cmake_docbook})
-

@@ -391,3 +391,27 @@ function(export_documentation)
   export(PACKAGE ${DOC_TARGET})
 
 endfunction()
+
+# This functions performs merging of several boostbooks into one
+function(merge_boostbook)
+  cmake_parse_arguments(merge_dbk
+    ""
+    "INPUT;OUTPUT"
+    "PATH;DEPENDS"
+    ${ARGN}
+  )
+  xsltproc(
+    INPUT
+      ${merge_dbk_INPUT}
+    OUTPUT
+      ${merge_dbk_OUTPUT}
+    STYLESHEET
+      ${BOOSTBOOK_XSL_DIR}/boostbook_merge.xsl
+    PATH
+      ${merge_dbk_PATH}
+    CATALOG
+      ${BOOSTBOOK_CATALOG}
+    DEPENDS
+      ${merge_dbk_DEPENDS}
+  )
+endfunction()
