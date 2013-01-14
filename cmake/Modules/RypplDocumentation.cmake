@@ -276,7 +276,8 @@ function(xslt_doxy_to_boostbook)
 endfunction()
 
 
-# Function performs generation doxygen XML and after that converts it do boostbook XML
+# Function converts sources to boostbook XML in the following way:
+#  src -> doxygen XML -> boostbook XML
 #
 # This function acts as simple composition of two commands
 #  ryppl_doxygen and xslt_doxy_to_boostbook
@@ -293,7 +294,7 @@ endfunction()
 #   see also documentation for `xslt_boostbook_to_docbook`
 #
 # Usage example
-function (ryppl_gen_doxy_to_boostbook)
+function (ryppl_src_to_boostbook)
   cmake_parse_arguments(DOXY_BBK
     ""
     "OUTPUT;DOXYFILE"
