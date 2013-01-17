@@ -21,6 +21,9 @@ include(RypplDocumentation)
 
 file(GLOB modules "cmake/Modules/*.cmake")
 
+
+# TODO write documentation according to
+#  http://www.cmake.org/Wiki/CMake_builtin_documentation_handling
 set(cmake_docbook "${CMAKE_CURRENT_BINARY_DIR}/cmake.docbook")
 add_custom_command(OUTPUT ${cmake_docbook}
   COMMAND ${CMAKE_COMMAND}
