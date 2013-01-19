@@ -37,10 +37,7 @@ macro(ryppl_project proj_name)
     ${ARGN}
   )
 
-
   set(RYPPL_${proj_name}_VALID 1)
-
-
 
   foreach(proj ${var_DEPENDS})
     ryppl_find_and_use_package(${proj})
@@ -56,6 +53,26 @@ macro(ryppl_project proj_name)
         if (NOT ${proj_compat_found})
           set(RYPPL_${proj_name}_VALID 0)
           list(APPEND missing_dependend_projects ${proj})
+        endif()
+      endif()
+    endif()
+  endforeach()
+
+
+    foreach(proj ${var_RECOMMENDS})
+    ryppl_find_and_use_package(${proj})
+    if (NOT ${RYPPL_INITIAL_PASS})
+      if (NOT ${proj}_FOUND)
+
+        # fix compatibility issues,
+        # for example PythonLibs package scrip set PYTHONLIBS_FOUND
+        # instead of PythonLibs_FOUND
+        # so check uppercase value if normal value is not set
+        string(TOUPPER "${proj}_FOUND" proj_compat_found)
+
+        if (NOT ${proj_compat_found})
+          #set(RYPPL_${proj_name}_VALID 0)
+          list(APPEND missing_recommended_projects ${proj})
         endif()
       endif()
     endif()
