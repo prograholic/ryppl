@@ -31,7 +31,7 @@ macro(ryppl_project proj_name)
   project(${proj_name})
 
   cmake_parse_arguments(var
-    "" # no options
+    "" # options
     "" # one value params
     "DEPENDS;RECOMMENDS" # multi value params
     ${ARGN}
@@ -45,7 +45,7 @@ macro(ryppl_project proj_name)
       if (NOT ${proj}_FOUND)
 
         # fix compatibility issues,
-        # for example PythonLibs package scrip set PYTHONLIBS_FOUND
+        # for example PythonLibs package script set PYTHONLIBS_FOUND
         # instead of PythonLibs_FOUND
         # so check uppercase value if normal value is not set
         string(TOUPPER "${proj}_FOUND" proj_compat_found)
@@ -65,21 +65,16 @@ macro(ryppl_project proj_name)
       if (NOT ${proj}_FOUND)
 
         # fix compatibility issues,
-        # for example PythonLibs package scrip set PYTHONLIBS_FOUND
+        # for example PythonLibs package script set PYTHONLIBS_FOUND
         # instead of PythonLibs_FOUND
         # so check uppercase value if normal value is not set
         string(TOUPPER "${proj}_FOUND" proj_compat_found)
 
         if (NOT ${proj_compat_found})
-          #set(RYPPL_${proj_name}_VALID 0)
           list(APPEND missing_recommended_projects ${proj})
         endif()
       endif()
     endif()
   endforeach()
-
-  if (NOT ${RYPPL_${proj_name}_VALID})
-    message(WARNING "project ${proj_name} cannot be properly configured, missing modules: ${missing_dependend_projects}")
-  endif()
 
 endmacro()
