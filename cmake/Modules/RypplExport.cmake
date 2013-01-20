@@ -237,7 +237,7 @@ endif()"
   endforeach()
 
   else(${EXPORT_VALID})
-    message(WARNING "project ${PROJECT_NAME} is not properly configured (flag VALID is false)")
+    #message(WARNING "project ${PROJECT_NAME} is not properly configured (flag VALID is false)")
   endif(${EXPORT_VALID})
 
   # configure and install the <project>Config.cmake file
