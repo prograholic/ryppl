@@ -9,6 +9,11 @@
 #   http://www.boost.org/LICENSE_1_0.txt
 #=============================================================================
 
+if(__RYPPL_INCLUDED)
+  return()
+endif()
+set(__RYPPL_INCLUDED TRUE)
+
 # silence warnings about unused variables
 set(_ryppl_disable_warnings
     RYPPL_DISABLE_TESTS 
@@ -24,5 +29,6 @@ endforeach()
 
 include(RypplAddSubdirectory)
 include(RypplExport)
+include(RypplProject)
 include(RypplFindPackage)
 include(BoostLibraryNaming)

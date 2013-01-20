@@ -21,7 +21,7 @@ include(CMakeParseArguments)
 
 function(ryppl_doxygen name)
   cmake_parse_arguments(DOXY
-    "XML;TAG" "DOXYFILE" "INPUT;TAGFILES;PARAMETERS" ${ARGN})
+    "XML;TAG;HTML" "DOXYFILE;OUTPUT" "INPUT;TAGFILES;PARAMETERS;XSLT_PARAMETERS" ${ARGN})
 
   set(doxyfile ${CMAKE_CURRENT_BINARY_DIR}/${name}.doxyfile)
 
@@ -54,10 +54,15 @@ function(ryppl_doxygen name)
   endif()
 
   if(DOXY_TAG)
-    set(tagfile ${CMAKE_CURRENT_BINARY_DIR}/${name}.tag)
-    list(APPEND output ${tagfile})
-    file(APPEND ${doxyfile} "GENERATE_TAGFILE = ${tagfile}\n")
-    set(${name}_tag ${tagfile} PARENT_SCOPE)
+    list(APPEND output ${DOXY_OUTPUT})
+    file(APPEND ${doxyfile} "GENERATE_TAGFILE = ${DOXY_OUTPUT}\n")
+  endif()
+
+  if (DOXY_HTML)
+    get_filename_component(html_dir ${DOXY_OUTPUT} PATH)
+    list(APPEND output ${DOXY_OUTPUT})
+    file(APPEND ${doxyfile} "GENERATE_HTML = YES\n")
+    file(APPEND ${doxyfile} "HTML_OUTPUT = ${html_dir}\n")
   endif()
 
   set(tagfiles)
@@ -84,9 +89,9 @@ function(ryppl_doxygen name)
     # Collect Doxygen XML into a single XML file
     xsltproc(
       INPUT      "${xml_dir}/index.xml"
-      OUTPUT     "${xml_dir}/all.xml"
+      OUTPUT     "${DOXY_OUTPUT}"
       STYLESHEET "${xml_dir}/combine.xslt"
-      )
-    set(${name}_xml ${xml_dir}/all.xml PARENT_SCOPE)
+      PARAMETERS ${DOXY_XSLT_PARAMETERS}
+    )
   endif()
 endfunction()

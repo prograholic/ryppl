@@ -13,7 +13,7 @@
 #     )
 #
 # This function builds a custom command that transforms an XML file
-# (input) via the given XSL stylesheet. 
+# (input) via the given XSL stylesheet.
 #
 # The PARAMETERS argument is followed by param=value pairs that set
 # additional parameters to the XSL stylesheet. The parameter names
@@ -56,7 +56,7 @@ else()
       )
   endif()
   include(FindPackageHandleStandardArgs)
-  find_package_handle_standard_args(XSLTPROC 
+  find_package_handle_standard_args(XSLTPROC
     REQUIRED_VARS XSLTPROC_EXECUTABLE
     VERSION_VAR XSLTPROC_VERSION
     )
@@ -85,7 +85,7 @@ function(xsltproc)
   cmake_parse_arguments(XSL
     "NONET;XINCLUDE"
     "CATALOG;STYLESHEET;OUTPUT"
-    "DEPENDS;INPUT;PARAMETERS"
+    "DEPENDS;INPUT;PARAMETERS;PATH"
     ${ARGN}
     )
 
@@ -146,5 +146,6 @@ function(xsltproc)
   add_custom_command(OUTPUT ${XSL_OUTPUT}
     COMMAND ${CMAKE_COMMAND} -DXSLTPROC=${XSLTPROC_EXECUTABLE} -P ${script}
     DEPENDS ${XSL_STYLESHEET} ${XSL_INPUT} ${XSL_DEPENDS}
+    COMMENT "performing xslt transformation for file ${XSL_INPUT} ..."
     )
 endfunction()
