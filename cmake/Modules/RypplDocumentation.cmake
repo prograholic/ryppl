@@ -203,6 +203,8 @@ function(xslt_boostbook_to_docbook)
       ${XSL_PATH}
     PARAMETERS
       ${XSL_PARAMETERS}
+    COMMENT
+      "converting boostbook XML to docbook XML (${XSL_OUTPUT}) ..."
   )
 endfunction()
 
@@ -241,6 +243,8 @@ function(xslt_docbook_to_html)
     PARAMETERS
       ${XSL_PARAMETERS}
       manifest="${XSL_MANIFEST}"
+    COMMENT
+      "converting docbook XML to HTML (${XSL_MANIFEST}) ..."
   )
 endfunction()
 
@@ -272,6 +276,8 @@ function(xslt_doxy_to_boostbook)
       ${XSL_PATH}
     PARAMETERS
       ${XSL_PARAMETERS}
+    COMMENT
+      "converting doxygen XML to boostbook XML (${XSL_OUTPUT}) ..."
   )
 endfunction()
 
@@ -413,5 +419,7 @@ function(merge_boostbook)
       ${BOOSTBOOK_CATALOG}
     DEPENDS
       ${merge_dbk_DEPENDS}
+    COMMENT
+      "merging several boostbook XMLs into one (${merge_dbk_OUTPUT}) ..."
   )
 endfunction()

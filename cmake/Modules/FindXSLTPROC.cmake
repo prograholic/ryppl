@@ -84,7 +84,7 @@ endmacro()
 function(xsltproc)
   cmake_parse_arguments(XSL
     "NONET;XINCLUDE"
-    "CATALOG;STYLESHEET;OUTPUT"
+    "CATALOG;STYLESHEET;OUTPUT;COMMENT"
     "DEPENDS;INPUT;PARAMETERS;PATH"
     ${ARGN}
     )
@@ -139,12 +139,16 @@ function(xsltproc)
     "if(NOT result EQUAL 0)\n"
     "  message(FATAL_ERROR \"xsltproc returned \${result}\")\n"
     "endif()\n"
-    )
+  )
+
+  if (NOT XSL_COMMENT)
+    set (XSL_COMMENT "performing xslt transformation for file ${XSL_INPUT} ...")
+  endif()
 
   # Run the XSLT processor to do the XML transformation.
   add_custom_command(OUTPUT ${XSL_OUTPUT}
     COMMAND ${CMAKE_COMMAND} -DXSLTPROC=${XSLTPROC_EXECUTABLE} -P ${script}
     DEPENDS ${XSL_STYLESHEET} ${XSL_INPUT} ${XSL_DEPENDS}
-    COMMENT "performing xslt transformation for file ${XSL_INPUT} ..."
+    COMMENT "${XSL_COMMENT}"
     )
 endfunction()

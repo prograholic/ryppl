@@ -92,6 +92,7 @@ function(ryppl_doxygen name)
       OUTPUT     "${DOXY_OUTPUT}"
       STYLESHEET "${xml_dir}/combine.xslt"
       PARAMETERS ${DOXY_XSLT_PARAMETERS}
+      COMMENT    "merge several doxygen XMLs into one (${DOXY_OUTPUT}) ..."
     )
   endif()
 endfunction()
