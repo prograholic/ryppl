@@ -134,7 +134,6 @@ function(xsltproc)
 
   file(APPEND ${script}
     "\n"
-    "  -o \"${XSL_OUTPUT}\" \"${XSL_STYLESHEET}\" \"${XSL_INPUT}\"\n"
     "  RESULT_VARIABLE result\n"
     "  )\n"
     "if(NOT result EQUAL 0)\n"
