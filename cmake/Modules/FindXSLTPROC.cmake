@@ -69,6 +69,18 @@ endif()
 
 include(CMakeParseArguments)
 
+macro(transform_to_xml_url2 input output)
+  if (WIN32 AND NOT CYGWIN)
+    set(${output} "file:///${${input}}")
+  else()
+    set(${output} ${${input}})
+  endif()
+endmacro()
+
+macro(transform_to_xml_url input)
+  transform_to_xml_url2(${input} ${input})
+endmacro()
+
 function(xsltproc)
   cmake_parse_arguments(XSL
     "NONET;XINCLUDE"
@@ -86,6 +98,7 @@ function(xsltproc)
   set(script "${CMAKE_CURRENT_BINARY_DIR}/${name}.cmake")
 
   string(REPLACE " " "%20" catalog "${XSL_CATALOG}")
+  transform_to_xml_url(catalog)
   file(WRITE ${script}
     "set(ENV{XML_CATALOG_FILES} \"${catalog}\")\n"
     "execute_process(COMMAND \${XSLTPROC} --xinclude --nonet\n"
@@ -99,7 +112,28 @@ function(xsltproc)
     file(APPEND ${script} "  --stringparam ${name} ${value}\n")
   endforeach()
 
+  # add paths for searching resources
+  foreach(path_entry ${XSL_PATH})
+    transform_to_xml_url(path_entry)
+    file(APPEND ${script} " --path \"${path_entry}\"")
+  endforeach()
+
+  transform_to_xml_url2(XSL_OUTPUT xml_xsl_output)
+  transform_to_xml_url2(XSL_STYLESHEET xml_xsl_stylesheet)
+  # add input file list
   file(APPEND ${script}
+    "  -o \"${xml_xsl_output}\" \"${xml_xsl_stylesheet}\""
+    )
+
+  foreach(input_file ${XSL_INPUT})
+    transform_to_xml_url(input_file)
+    file(APPEND ${script}
+      " \"${input_file}\""
+      )
+  endforeach()
+
+  file(APPEND ${script}
+    "\n"
     "  -o \"${XSL_OUTPUT}\" \"${XSL_STYLESHEET}\" \"${XSL_INPUT}\"\n"
     "  RESULT_VARIABLE result\n"
     "  )\n"
