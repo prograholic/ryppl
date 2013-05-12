@@ -16,7 +16,7 @@ setup(
                    'License :: OSI Approved :: Boost Software License 1.0 (BSL 1.0)',
                    'Operating System :: OS Independent',
                    'Programming Language :: Python'],
-    packages = ['ryppl', 'ryppl.commands'],
+    packages = ['ryppl', 'ryppl.commands', 'ryppl.support', 'ryppl.support._zeroinstall'],
     entry_points=dict(console_scripts=['ryppl = ryppl.main:run']),
 
     long_description = open('README.rst').read(),
