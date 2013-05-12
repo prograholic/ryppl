@@ -11,16 +11,29 @@ project(Ryppl NONE)
 
 set(CMAKE_MODULE_PATH "${Ryppl_SOURCE_DIR}/cmake/Modules")
 
+
+if (${RYPPL_DISABLE_DOCS})
+  # documentation disabled, does nothing
+  return()
+endif()
+
 include(RypplDocumentation)
 
 file(GLOB modules "cmake/Modules/*.cmake")
 
-set(cmake_docbook "${CMAKE_BINARY_DIR}/cmake.docbook")
+
+# TODO write documentation according to
+#  http://www.cmake.org/Wiki/CMake_builtin_documentation_handling
+set(cmake_docbook "${CMAKE_CURRENT_BINARY_DIR}/cmake.docbook")
 add_custom_command(OUTPUT ${cmake_docbook}
   COMMAND ${CMAKE_COMMAND}
     -DCMAKE_MODULE_PATH="${CMAKE_MODULE_PATH}"
-    --help-full ${cmake_docbook}
+    --help-custom-modules ${cmake_docbook}
   DEPENDS ${modules}
-  )
-ryppl_documentation(${cmake_docbook})
+)
 
+export_documentation(
+  # actually this is NOT boostbook but docbook
+  BOOSTBOOK
+    ${cmake_docbook}
+)

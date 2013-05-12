@@ -13,7 +13,7 @@
 #     )
 #
 # This function builds a custom command that transforms an XML file
-# (input) via the given XSL stylesheet. 
+# (input) via the given XSL stylesheet.
 #
 # The PARAMETERS argument is followed by param=value pairs that set
 # additional parameters to the XSL stylesheet. The parameter names
@@ -56,7 +56,7 @@ else()
       )
   endif()
   include(FindPackageHandleStandardArgs)
-  find_package_handle_standard_args(XSLTPROC 
+  find_package_handle_standard_args(XSLTPROC
     REQUIRED_VARS XSLTPROC_EXECUTABLE
     VERSION_VAR XSLTPROC_VERSION
     )
@@ -69,11 +69,23 @@ endif()
 
 include(CMakeParseArguments)
 
+macro(transform_to_xml_url2 input output)
+  if (WIN32 AND NOT CYGWIN)
+    set(${output} "file:///${${input}}")
+  else()
+    set(${output} ${${input}})
+  endif()
+endmacro()
+
+macro(transform_to_xml_url input)
+  transform_to_xml_url2(${input} ${input})
+endmacro()
+
 function(xsltproc)
   cmake_parse_arguments(XSL
     "NONET;XINCLUDE"
-    "CATALOG;STYLESHEET;OUTPUT"
-    "DEPENDS;INPUT;PARAMETERS"
+    "CATALOG;STYLESHEET;OUTPUT;COMMENT"
+    "DEPENDS;INPUT;PARAMETERS;PATH"
     ${ARGN}
     )
 
@@ -86,6 +98,7 @@ function(xsltproc)
   set(script "${CMAKE_CURRENT_BINARY_DIR}/${name}.cmake")
 
   string(REPLACE " " "%20" catalog "${XSL_CATALOG}")
+  transform_to_xml_url(catalog)
   file(WRITE ${script}
     "set(ENV{XML_CATALOG_FILES} \"${catalog}\")\n"
     "execute_process(COMMAND \${XSLTPROC} --xinclude --nonet\n"
@@ -99,18 +112,43 @@ function(xsltproc)
     file(APPEND ${script} "  --stringparam ${name} ${value}\n")
   endforeach()
 
+  # add paths for searching resources
+  foreach(path_entry ${XSL_PATH})
+    transform_to_xml_url(path_entry)
+    file(APPEND ${script} " --path \"${path_entry}\"")
+  endforeach()
+
+  transform_to_xml_url2(XSL_OUTPUT xml_xsl_output)
+  transform_to_xml_url2(XSL_STYLESHEET xml_xsl_stylesheet)
+  # add input file list
   file(APPEND ${script}
-    "  -o \"${XSL_OUTPUT}\" \"${XSL_STYLESHEET}\" \"${XSL_INPUT}\"\n"
+    "  -o \"${xml_xsl_output}\" \"${xml_xsl_stylesheet}\""
+    )
+
+  foreach(input_file ${XSL_INPUT})
+    transform_to_xml_url(input_file)
+    file(APPEND ${script}
+      " \"${input_file}\""
+      )
+  endforeach()
+
+  file(APPEND ${script}
+    "\n"
     "  RESULT_VARIABLE result\n"
     "  )\n"
     "if(NOT result EQUAL 0)\n"
     "  message(FATAL_ERROR \"xsltproc returned \${result}\")\n"
     "endif()\n"
-    )
+  )
+
+  if (NOT XSL_COMMENT)
+    set (XSL_COMMENT "performing xslt transformation for file ${XSL_INPUT} ...")
+  endif()
 
   # Run the XSLT processor to do the XML transformation.
   add_custom_command(OUTPUT ${XSL_OUTPUT}
     COMMAND ${CMAKE_COMMAND} -DXSLTPROC=${XSLTPROC_EXECUTABLE} -P ${script}
     DEPENDS ${XSL_STYLESHEET} ${XSL_INPUT} ${XSL_DEPENDS}
+    COMMENT "${XSL_COMMENT}"
     )
 endfunction()

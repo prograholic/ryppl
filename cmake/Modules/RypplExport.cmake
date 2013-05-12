@@ -101,7 +101,7 @@ function(ryppl_export)
   foreach(depends ${EXPORT_DEPENDS})
     string(FIND ${depends} " " index)
     string(SUBSTRING ${depends} 0 ${index} name)
-    set(_find_package "${_find_package}find_package(${depends})\n")
+    set(_find_package "${_find_package}find_package(${depends} QUIET)\n")
     set(_definitions "${_definitions}\${${name}_DEFINITIONS}\n  ")
     set(_include_dirs "${_include_dirs}\n  \${${name}_INCLUDE_DIRS}")
   endforeach()
@@ -180,15 +180,28 @@ endif()
 if(NOT ${PROJECT_NAME}_BIN_DIR)
   set(${PROJECT_NAME}_BIN_DIR \"\${${PROJECT_NAME}_DEV_DIR}\")
 endif()"
-    )
+  )
+
+  set(EXPORT_VALID 1)
+  #message(STATUS "export: ${PROJECT_NAME}: ${RYPPL_${PROJECT_NAME}_VALID}")
+  if (NOT RYPPL_${PROJECT_NAME}_VALID OR NOT ${RYPPL_${PROJECT_NAME}_VALID})
+    #message(WARNING "export: ${PROJECT_NAME}: INVALID")
+    set(EXPORT_VALID 0)
+  endif()
+
+  file(APPEND "${_config_in}" "set(${PROJECT_NAME}_FOUND ${EXPORT_VALID})\n")
 
   # configure the <project>Config.cmake file for use from the build directory
   ryppl_configure_package_config_file("${_config_in}" "${_config_build}"
     BUILD
-    )
+  )
+
+
 
   set(libraries)
   set(executables)
+  if (${EXPORT_VALID})
+
   foreach(target ${EXPORT_TARGETS})
     get_target_property(type ${target} TYPE)
     if("${type}" STREQUAL "SHARED_LIBRARY")
@@ -222,6 +235,10 @@ endif()"
       list(APPEND executables ${target})
     endif()
   endforeach()
+
+  else(${EXPORT_VALID})
+    #message(WARNING "project ${PROJECT_NAME} is not properly configured (flag VALID is false)")
+  endif(${EXPORT_VALID})
 
   # configure and install the <project>Config.cmake file
   ryppl_configure_package_config_file("${_config_in}" "${_config_install}"
